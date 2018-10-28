@@ -4,6 +4,12 @@
 
 > PHP implementation of RFC8188 to encrypt HTTP messages.
 
+[![Build Status](https://travis-ci.org/devjack/encrypted-content-encoding.svg?branch=master)](https://travis-ci.org/devjack/encrypted-content-encoding)
+[![Latest Stable Version](https://poser.pugx.org/devjack/encrypted-content-encoding/v/stable)](https://packagist.org/packages/devjack/encrypted-content-encoding)
+[![Total Downloads](https://poser.pugx.org/devjack/encrypted-content-encoding/downloads)](https://packagist.org/packages/devjack/encrypted-content-encoding)
+[![Latest Unstable Version](https://poser.pugx.org/devjack/encrypted-content-encoding/v/unstable)](https://packagist.org/packages/devjack/encrypted-content-encoding)
+[![License](https://poser.pugx.org/devjack/encrypted-content-encoding/license)](https://packagist.org/packages/devjack/encrypted-content-encoding)
+
 ## Code Samples
 
 > Note: RFC8188 relies heavily on base64 URL encoding. 
