@@ -1,6 +1,20 @@
 {
     "name": "devjack/encrypted-content-encoding",
     "description": "Encrypted Content-Encoding for HTTP (RFC8188)",
+    "keywords": ["encryption", "rfc8188", "middleware", "encoding", "aes128gcm"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jack Skinner",
+            "homepage": "https://developerjack.com",
+            "email": "opensource@developerjack.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/devjack/encrypted-content-encoding/issues",
+        "source": "https://github.com/devjack/encrypted-content-encoding",
+        "docs": "https://github.com/devjack/encrypted-content-encoding"
+    },
     "require": {
         "ext-openssl": "*",
         "spomky-labs/base64url": "^2.0"
