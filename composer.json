@@ -6,6 +6,16 @@
         "spomky-labs/base64url": "^2.0"
     },
     "autoload": {
-        "files": ["rfc8188.php"]
+        "psr-4": {
+            "DevJack\\EncryptedContentEncoding\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DevJack\\EncryptedContentEncoding\\Test\\": "test/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7"
     }
 }
