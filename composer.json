@@ -1,0 +1,11 @@
+{
+    "name": "devjack/encrypted-content-encoding",
+    "description": "Encrypted Content-Encoding for HTTP (RFC8188)",
+    "require": {
+        "ext-openssl": "*",
+        "spomky-labs/base64url": "^2.0"
+    },
+    "autoload": {
+        "files": ["rfc8188.php"]
+    }
+}
