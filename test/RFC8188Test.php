@@ -5,27 +5,26 @@ namespace DevJack\EncryptedContentEncoding\Test;
 use PHPUnit\Framework\TestCase;
 
 use DevJack\EncryptedContentEncoding\RFC8188;
+use DevJack\EncryptedContentEncoding\SimpleKeyProvider;
 use Base64Url\Base64Url as b64;
 
 final class RFC8188Test extends TestCase
 {
     public function testIAmTheWalrus(): void
     {
-        $keys = [
-            b64::decode('yqdlZ-tYemfogSmv7Ws5PQ'),
-        ];
+        $keyProvider = new SimpleKeyProvider(
+            ['sample-key-id' => RFC8188::base64url_decode('yqdlZ-tYemfogSmv7Ws5PQ')]
+        );
+
+        $rfc8188 = new RFC8188(
+            $keyProvider, // Instance of class that implements KeyProviderInterface
+            4096 // default record size
+        );
+
         $message = "I Am the walrus";
 
-        $encoded = RFC8188::rfc8188_encode(
-            $message, // plaintext
-            b64::decode("yqdlZ-tYemfogSmv7Ws5PQ"), // encryption key
-            null,   // key ID
-            4096    // record size.
-        );
-        $decoded = RFC8188::rfc8188_decode(
-            $encoded, // data to decode 
-            [b64::decode("yqdlZ-tYemfogSmv7Ws5PQ")] // Keys
-        );
+        $encoded = $rfc8188->encode($message, 'sample-key-id', 4096);
+        $decoded = $rfc8188->decode($encoded);
 
         $this->assertEquals($message, $decoded);
     }

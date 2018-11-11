@@ -5,7 +5,101 @@ use Base64Url\Base64Url as b64;
 
 class RFC8188
 {
-    protected static function hkdf($salt, $ikm, $sequence=0)
+
+    /**
+     * KeyProvider to be used for key ID => encryption key mapping.
+     */
+    protected $keyProvider = null;
+
+    /**
+     * Record size to be used during encoding.
+     */
+    protected $rs = 4096;
+
+    /**
+     * Default Key ID to use unless otherwise provided
+     */
+    protected $keyid = null;
+
+    public function __construct(KeyProviderInterface $keyProvider, $rs = 4096, $keyid = null)
+    {
+        $this->keyProvider = $keyProvider;
+        $this->rs = $rs;
+    }
+
+    /**
+     * Base64URL encode the data
+     *
+     * Convenience wrapper for Base64Url\Base64Url::encode();
+     */
+    public static function base64url_encode($data)
+    {
+        return b64::encode($data);
+    }
+
+    /**
+     * Base64URL decode the data
+     *
+     * Convenience wrapper for Base64Url\Base64Url::decode();
+     */
+    public static function base64url_decode($data)
+    {
+        return b64::decode($data);
+    }
+
+    public function encode($data, $keyid=null, $rs=null)
+    {
+        if (is_null($keyid)) {
+            $keyid = $this->keyid;
+        }
+        if (is_null($rs)) {
+            $rs = $this->rs;
+        }
+
+        if (is_null($keyid) || is_null($rs)) {
+            throw new \Exception(sprintf(
+                "keyid or record size not provided."
+            ));
+        }
+
+        $key = $this->keyProvider->getKey($keyid);
+
+        $encrypted = $this->rfc8188_encode($data, $key, $keyid, $rs);
+
+        return $encrypted;
+    }
+
+    public function decode($data)
+    {
+        $header = $this->parse_rfc8188_header($data);
+
+        $key = $this->keyProvider->getKey($header['keyid']);
+        
+        $content = $this->rfc8188_decode($header['payload_body'], $header['salt'], $key, $header['rs']);
+
+        return $content;
+    }
+
+    private function parse_rfc8188_header($payload)
+    {
+        $payload_hex = bin2hex($payload);
+        $salt = hex2bin(substr($payload_hex, 0, 16*2));
+        $rs = hexdec(substr($payload_hex, 32, 4*2));
+        $idlen = hexdec(substr($payload_hex, 40, 1*2));
+        $header_boundary = 42 + $idlen*2;
+        $keyid = hex2bin(substr($payload_hex, 42, $idlen*2));
+
+        $encoded_body = substr($payload_hex, $header_boundary);
+
+        return [
+            'salt' => $salt,
+            'rs' => $rs,
+            'keyid' => $keyid,
+            'payload_body' => $encoded_body,
+        ];
+    }
+
+    private static function hkdf($salt, $ikm, $sequence=0)
     {
         $prk = hash_hmac('sha256', $ikm, $salt, true);
         $cek_info = "Content-Encoding: aes128gcm\x00";
@@ -21,31 +115,17 @@ class RFC8188
         ];
     }
 
-    public static function rfc8188_decode($payload, $keys = [])
-    {       
-        if (empty($keys)) {
-            throw new Exception(sprintf(
-                "Decryption keys not provided"
-            ));
-        }
-
-        $payload_hex = bin2hex($payload);
-        $salt = hex2bin(substr($payload_hex, 0, 16*2));
-        $rs = hexdec(substr($payload_hex, 32, 4*2));
-        $idlen = hexdec(substr($payload_hex, 40, 1*2));
-        $header_boundary = 42 + $idlen*2;
-        $keyid = hex2bin(substr($payload_hex, 42, $idlen*2));
-    
-        if ($keyid) {
-            $key = $keys[$keyid];
-        } else {
-            // If the key ID is not provided, then attempt using the first and likely only key.
-            $key = $keys[0];
-        }
-        
-        $encoded_body = substr($payload_hex, $header_boundary);
-    
-        $records = str_split($encoded_body, ($rs*2));
+    /**
+     * Decode and decrypt the $payload
+     * 
+     * string $payload hex string of bin payload.
+     * string $salt 
+     * string $key 
+     * $rs Record Size.
+     */
+    private static function rfc8188_decode($payload, $salt, $key, $rs)
+    {
+        $records = str_split($payload, ($rs*2));
     
         $return = "";
         // decrypt each record
@@ -78,7 +158,8 @@ class RFC8188
             $decrypted_record = openssl_decrypt($block, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
             if (false === $decrypted_record) {
                 throw new Exception(sprintf(
-                    "OpenSSL error: %s", openssl_error_string()
+                    "OpenSSL error: %s",
+                    openssl_error_string()
                 ));
             }
             $return .= $decrypted_record;
@@ -89,7 +170,7 @@ class RFC8188
         return $decrypted_record;
     }
 
-    public static function rfc8188_encode($payload, $key, $keyid=null, $rs=25)
+    private function rfc8188_encode($payload, $key, $keyid, $rs)
     {
         // Calculate header:
         $salt = random_bytes(16);
@@ -120,7 +201,8 @@ class RFC8188
         
             if (false === $encrypted) {
                 throw new Exception(sprintf(
-                    "OpenSSL error: %s", openssl_error_string()
+                    "OpenSSL error: %s",
+                    openssl_error_string()
                 ));
             }
             $return .= $encrypted.$tag;
