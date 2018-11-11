@@ -12,7 +12,7 @@ trait KeyProviderTrait {
         if (array_key_exists($id, $this->keys)) {
             return $this->keys[$id];
         }
-        throw EncryptionKeyNotFound("Key $id is not configured.");
+        throw new EncryptionKeyNotFound("Key $id is not configured.");
     }
     
 }
