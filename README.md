@@ -2,7 +2,7 @@
 
 ## Introduction
 
-> PHP implementation of RFC8188 to encrypt HTTP messages.
+> PHP implementation of [RFC8188](https://tools.ietf.org/html/rfc8188) to encrypt HTTP messages.
 
 [![Build Status](https://travis-ci.org/devjack/encrypted-content-encoding.svg?branch=master)](https://travis-ci.org/devjack/encrypted-content-encoding)
 [![Latest Stable Version](https://poser.pugx.org/devjack/encrypted-content-encoding/v/stable)](https://packagist.org/packages/devjack/encrypted-content-encoding)
@@ -12,29 +12,29 @@
 
 ## Code Samples
 
-> Note: RFC8188 relies heavily on base64 URL encoding. 
+> Note: RFC8188 relies heavily on Base64URL encoding. A static encode/decode function is available for convenience.
 
 ```php
 require_once "vendor/autoload.php";
 
-use Base64Url\Base64Url as b64;
+use DevJack\EncryptedContentEncoding\RFC8188;
+use DevJack\EncryptedContentEncoding\SimpleKeyProvider;
 
-$encoded = RFC8188::rfc8188_encode(
-    "I am the walrus", // plaintext
-    b64::decode("yqdlZ-tYemfogSmv7Ws5PQ"), // encryption key
-    null,   // key ID
-    4096    // record size. Default is 25
+$keyProvider = new SimpleKeyProvider(
+    ['sample-key-id' => RFC8188::base64url_decode('yqdlZ-tYemfogSmv7Ws5PQ')]
 );
 
-$decoded = RFC8188::rfc8188_decode(
-    $encoded, // data to decode 
-    [b64::decode("yqdlZ-tYemfogSmv7Ws5PQ")] // Keys
+$rfc8188 = new RFC8188(
+    $keyProvider, // Instance of class that implements KeyProviderInterface
+    4096, // Optional default record size. If not provided, must be called with encode()
+    'defauly-key-id' // Optional default key id. If not provided, must be called with encode()
 );
 
-echo "Encrypted === Decrypted? " .($decoded === "I am the walrus");
+$message = "I Am the walrus";
+
+$encoded = $rfc8188->encode($message, 'sample-key-id', 4096);
+$decoded = $rfc8188->decode($encoded);
 ```
-
-
 
 ## Installation
 
