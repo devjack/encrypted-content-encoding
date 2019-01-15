@@ -16,6 +16,7 @@
         "docs": "https://github.com/devjack/encrypted-content-encoding"
     },
     "require": {
+        "php": "~5.6 || >=7.1",
         "ext-openssl": "*",
         "spomky-labs/base64url": "^1.0",
         "paragonie/random_compat": "<9.99",
