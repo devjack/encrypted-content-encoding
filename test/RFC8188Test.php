@@ -54,4 +54,29 @@ final class RFC8188Test extends TestCase
 
         $this->assertEquals($message, $decoded);
     }
+
+
+    public function testMultiRecordParagraphs(): void
+    {
+        $key = \random_bytes(16);
+    
+        $message = "I am the egg man
+        They are the egg men
+        I am the walrus
+        Goo goo g'joob, goo goo goo g'joob
+        Goo goo g'joob, goo goo goo g'joob, goo goo";
+
+        $encoded = RFC8188::rfc8188_encode(
+            $message, // plaintext
+            $key, // encryption key
+            '',   // key ID
+            30    // record size.
+        );
+        $decoded = RFC8188::rfc8188_decode(
+            $encoded, // data to decode 
+            [$key] // Keys
+        );
+
+        $this->assertEquals($message, $decoded);
+    }
 }

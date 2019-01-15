@@ -96,23 +96,24 @@ class RFC8188
 
         $return = $header; // $header is the first chunk of the return body
 
-        $plaintext_records = str_split($payload, $rs-16);
+        $plaintext_records = str_split($payload, $rs-17);
         // Process records
         $number_of_records = count($plaintext_records);
         for ($p=0; $p<count($plaintext_records); $p++) {
-            // For each 'page' in the payload, create and encrypt a record.
+            
+            $plaintext_record = $plaintext_records[$p];
+            
             if ($p == $number_of_records - 1) {
-                // last page, take the remaining plaintext with 0x02
-                $record_plaintext = substr($payload, $p*($rs-16))."\x02";    
+                // 0x02 delimits padding in the last record
+                $plaintext_record = $plaintext_record."\x02";
             } else {
                 // 0x01 delimits padding in each record
-                $record_plaintext = substr($payload, $p*($rs-16), $rs)."\0x01";
-                $record_plaintext = str_pad($record_plaintext, $rs, "\x00", STR_PAD_RIGHT);
+                $plaintext_record = str_pad($plaintext_record."\x01", $rs-16, "\x00", STR_PAD_RIGHT);
             }
 
             $hkdf = self::hkdf($salt, $key, $p);
 
-            $encrypted = openssl_encrypt($record_plaintext, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
+            $encrypted = openssl_encrypt($plaintext_record, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
         
             if (false === $encrypted) {
                 throw new Exception(sprintf(
