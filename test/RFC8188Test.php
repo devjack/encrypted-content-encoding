@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 namespace DevJack\EncryptedContentEncoding\Test;
 
 use PHPUnit\Framework\TestCase;
@@ -10,7 +9,7 @@ use Base64Url\Base64Url as b64;
 final class RFC8188Test extends TestCase
 {
 
-    public function testDecryptRFC8188Example31(): void
+    public function testDecryptRFC8188Example31()
     {
         $encoded = b64::decode("I1BsxtFttlv3u_Oo94xnmwAAEAAA-NAVub2qFgBEuQKRapoZu-IxkIva3MEB1PD-ly8Thjg");
         
@@ -22,7 +21,7 @@ final class RFC8188Test extends TestCase
         $this->assertEquals("I am the walrus", $decoded);
     }
 
-    public function testDecryptRFC8188Example32(): void 
+    public function testDecryptRFC8188Example32()
     {
         $encoded = b64::decode("uNCkWiNYzKTnBN9ji3-qWAAAABkCYTHOG8chz_gnvgOqdGYovxyjuqRyJFjEDyoF1Fvkj6hQPdPHI51OEUKEpgz3SsLWIqS_uA");
         
@@ -34,7 +33,7 @@ final class RFC8188Test extends TestCase
         $this->assertEquals("I am the walrus", $decoded);
     }
 
-    public function testIAmTheWalrus(): void
+    public function testIAmTheWalrus()
     {
         $message = "I am the walrus";
 
@@ -53,7 +52,7 @@ final class RFC8188Test extends TestCase
     }
 
 
-    public function testMultiRecordParagraphs(): void
+    public function testMultiRecordParagraphs()
     {
         $key = \random_bytes(16);
 

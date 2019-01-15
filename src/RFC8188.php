@@ -88,7 +88,7 @@ class RFC8188
     public static function rfc8188_encode($payload, $key, $keyid=null, $rs=25)
     {
         // Calculate header:
-        $salt = random_bytes(16);
+        $salt = \random_bytes(16);
         $header = bin2hex($salt)
             .(sprintf('%08X', $rs))
             .bin2hex(pack("C", strlen($keyid)))
