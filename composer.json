@@ -18,7 +18,8 @@
     "require": {
         "ext-openssl": "*",
         "spomky-labs/base64url": "^1.0",
-        "paragonie/random_compat": "<9.99"
+        "paragonie/random_compat": "<9.99",
+        "spomky-labs/php-aes-gcm": "^1.2"
     },
     "autoload": {
         "psr-4": {

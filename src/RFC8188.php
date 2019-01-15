@@ -2,6 +2,7 @@
 namespace DevJack\EncryptedContentEncoding;
 
 use Base64Url\Base64Url as b64;
+use AESGCM\AESGCM;
 
 class RFC8188
 {
@@ -59,7 +60,13 @@ class RFC8188
             $hkdf = self::hkdf($salt, $key, $s);
 
             // decrypt
-            $decrypted_record = openssl_decrypt($ciphertext, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
+            if (version_compare(phpversion(), '7.0.0', '>')) {
+                $decrypted_record = openssl_decrypt($ciphertext, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
+            } else {
+                // Attempt PHP 5.6 compat
+                $decrypted_record = AESGCM::decryptWithAppendedTag($hkdf['cek'], $hkdf['nonce'], $ciphertext.$tag, null, 128);
+            }
+
             if (false === $decrypted_record) {
                 throw new \Exception(sprintf(
                     "OpenSSL error: %s",
@@ -113,15 +120,18 @@ class RFC8188
             }
 
             $hkdf = self::hkdf($salt, $key, $p);
-
-            $encrypted = openssl_encrypt($plaintext_record, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
-        
-            if (false === $encrypted) {
-                throw new Exception(sprintf(
-                    "OpenSSL error: %s", openssl_error_string()
-                ));
+            if (version_compare(phpversion(), '7.0.0', '>')) {
+                $encrypted = openssl_encrypt($plaintext_record, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
+                $block = $encrypted.$tag;
+                if (false === $encrypted) {
+                    throw new Exception(sprintf(
+                        "OpenSSL error: %s", openssl_error_string()
+                    ));
+                }
+            } else {
+                // Attempt PHP 5.6 compat
+                $block = AESGCM::encryptAndAppendTag($hkdf['cek'],$hkdf['nonce'], $plaintext_record, null);
             }
-            $block = $encrypted.$tag;
             $return .= $block;
         }
         return $return;
