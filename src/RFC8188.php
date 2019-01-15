@@ -21,11 +21,11 @@ class RFC8188
         ];
     }
 
-    public static function rfc8188_decode($payload, $keys = [])
+    public static function rfc8188_decode($payload, $key_lookup)
     {       
-        if (empty($keys)) {
+        if (!is_callable($key_lookup)) {
             throw new Exception(sprintf(
-                "Decryption keys not provided"
+                '$key_lookup must be invocable'
             ));
         }
 
@@ -36,11 +36,12 @@ class RFC8188
         $header_boundary = 42 + $idlen*2;
         $keyid = hex2bin(substr($payload_hex, 42, $idlen*2));
         
-        if ($keyid) {
-            $key = $keys[$keyid];
-        } else {
-            // If the key ID is not provided, then attempt using the first and likely only key.
-            $key = array_pop($keys);
+        $key = $key_lookup($keyid);
+        
+        if(is_null($key)) {
+            throw new \Exception(sprintf(
+                'Key lookup returned in invalid key'
+            ));
         }
         
         $encoded_body = substr($payload_hex, $header_boundary);

@@ -16,7 +16,7 @@ final class RFC8188Test extends TestCase
         
         $decoded = RFC8188::rfc8188_decode(
             $encoded, // data to decode 
-            [b64::decode("yqdlZ-tYemfogSmv7Ws5PQ")] // Keys
+            function($keyid) { return b64::decode("yqdlZ-tYemfogSmv7Ws5PQ"); }
         );
 
         $this->assertEquals("I am the walrus", $decoded);
@@ -28,7 +28,7 @@ final class RFC8188Test extends TestCase
         
         $decoded = RFC8188::rfc8188_decode(
             $encoded, // data to decode 
-            ['a1' => b64::decode("BO3ZVPxUlnLORbVGMpbT1Q")] // Keys
+            function($keyid) { return b64::decode("BO3ZVPxUlnLORbVGMpbT1Q"); }
         );
 
         $this->assertEquals("I am the walrus", $decoded);
@@ -36,9 +36,6 @@ final class RFC8188Test extends TestCase
 
     public function testIAmTheWalrus(): void
     {
-        $keys = [
-            b64::decode('yqdlZ-tYemfogSmv7Ws5PQ'),
-        ];
         $message = "I am the walrus";
 
         $encoded = RFC8188::rfc8188_encode(
@@ -49,7 +46,7 @@ final class RFC8188Test extends TestCase
         );
         $decoded = RFC8188::rfc8188_decode(
             $encoded, // data to decode 
-            [b64::decode("yqdlZ-tYemfogSmv7Ws5PQ")] // Keys
+            function($keyid) { return b64::decode('yqdlZ-tYemfogSmv7Ws5PQ'); }
         );
 
         $this->assertEquals($message, $decoded);
@@ -59,7 +56,7 @@ final class RFC8188Test extends TestCase
     public function testMultiRecordParagraphs(): void
     {
         $key = \random_bytes(16);
-    
+
         $message = "I am the egg man
         They are the egg men
         I am the walrus
@@ -69,12 +66,12 @@ final class RFC8188Test extends TestCase
         $encoded = RFC8188::rfc8188_encode(
             $message, // plaintext
             $key, // encryption key
-            '',   // key ID
+            $key,
             30    // record size.
         );
         $decoded = RFC8188::rfc8188_decode(
             $encoded, // data to decode 
-            [$key] // Keys
+            function($keyid ) use ($key) { return $key; }
         );
 
         $this->assertEquals($message, $decoded);

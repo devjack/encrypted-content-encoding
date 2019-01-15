@@ -19,19 +19,20 @@ require_once "vendor/autoload.php";
 
 use Base64Url\Base64Url as b64;
 
+$message = "I am the walrus";
+
 $encoded = RFC8188::rfc8188_encode(
-    "I am the walrus", // plaintext
+    $message, // plaintext
     b64::decode("yqdlZ-tYemfogSmv7Ws5PQ"), // encryption key
     null,   // key ID
-    4096    // record size. Default is 25
+    123    // record size.
 );
-
 $decoded = RFC8188::rfc8188_decode(
     $encoded, // data to decode 
-    [b64::decode("yqdlZ-tYemfogSmv7Ws5PQ")] // Keys
+    function($keyid) { return b64::decode('yqdlZ-tYemfogSmv7Ws5PQ'); }
 );
 
-echo "Encrypted === Decrypted? " .($decoded === "I am the walrus");
+$this->assertEquals($message, $decoded);
 ```
 
 
