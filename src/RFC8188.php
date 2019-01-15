@@ -66,25 +66,18 @@ class RFC8188
                 ));
             }
 
-            // Check for the padding delim and remove it.
-            for ($i=strlen($decrypted_record); $i>0; $i--) {
-                $byte = bin2hex(substr($decrypted_record, $i-1, 1));
-                
-                if ($byte === 0x00) {
-                    continue;
-                } elseif ($byte == 0x02) {
-                    // 0x02 is only used for the last record
-                    if ($s !== count($records)-1) {
-                        throw new \Exception("Invalid encoding. 0x02");
-                    }
-                    // Slice off the padding.
-                    $unpadded_record = substr($decrypted_record, 0, strlen($decrypted_record)-$i-1);
-                    $return .= $unpadded_record;
-                } elseif ($byte == 0x01) {
-                    // Found a 0x01 delimiter. Slice off the padding.
-                    $unpadded_record = substr($decrypted_record, 0, strlen($decrypted_record)-$i-1);
-                    $return .= $unpadded_record;
+            // remove 0x00 padding
+            $decrypted_record = rtrim($decrypted_record, "\x00");
+            if(substr($decrypted_record, -1) == "\x01") {
+                // Normal recode deliminter
+                $return .= rtrim($decrypted_record, "\x01"); // remove the 0x01 and return
+            } else if(substr($decrypted_record, -1) == "\x02") {
+                if ($s !== count($records)-1) {
+                    throw new \Exception("Invalid encoding. 0x02");
                 }
+                $return .= rtrim($decrypted_record, "\x02"); // remove the 0x01 and return
+            } else {
+                throw new \Exception("Invalid encoding. No record delimiter.");
             }
         }
         

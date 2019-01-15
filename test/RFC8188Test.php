@@ -22,6 +22,18 @@ final class RFC8188Test extends TestCase
         $this->assertEquals("I am the walrus", $decoded);
     }
 
+    public function testDecryptRFC8188Example32(): void 
+    {
+        $encoded = b64::decode("uNCkWiNYzKTnBN9ji3-qWAAAABkCYTHOG8chz_gnvgOqdGYovxyjuqRyJFjEDyoF1Fvkj6hQPdPHI51OEUKEpgz3SsLWIqS_uA");
+        
+        $decoded = RFC8188::rfc8188_decode(
+            $encoded, // data to decode 
+            ['a1' => b64::decode("BO3ZVPxUlnLORbVGMpbT1Q")] // Keys
+        );
+
+        $this->assertEquals("I am the walrus", $decoded);
+    }
+
     public function testIAmTheWalrus(): void
     {
         $keys = [
