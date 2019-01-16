@@ -25,7 +25,7 @@ class RFC8188
     public static function rfc8188_decode($payload, $key_lookup)
     {       
         if (!is_callable($key_lookup)) {
-            throw new Exception(sprintf(
+            throw new \Exception(sprintf(
                 '$key_lookup must be invocable'
             ));
         }
@@ -124,7 +124,7 @@ class RFC8188
                 $encrypted = openssl_encrypt($plaintext_record, "aes-128-gcm", $hkdf['cek'], OPENSSL_RAW_DATA, $hkdf['nonce'], $tag);
                 $block = $encrypted.$tag;
                 if (false === $encrypted) {
-                    throw new Exception(sprintf(
+                    throw new \Exception(sprintf(
                         "OpenSSL error: %s", openssl_error_string()
                     ));
                 }

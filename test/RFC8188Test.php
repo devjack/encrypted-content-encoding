@@ -4,6 +4,8 @@ namespace DevJack\EncryptedContentEncoding\Test;
 use PHPUnit\Framework\TestCase;
 
 use DevJack\EncryptedContentEncoding\RFC8188;
+use DevJack\EncryptedContentEncoding\Test\Mock\MockKeyLookupProvider;
+use DevJack\EncryptedContentEncoding\Exception\EncryptionKeyNotFound;
 use Base64Url\Base64Url as b64;
 
 final class RFC8188Test extends TestCase
@@ -74,6 +76,32 @@ final class RFC8188Test extends TestCase
         );
 
         $this->assertEquals($message, $decoded);
+    }
+
+    public function testCanInvokeCallableClassAsKeyProvider() {
+        $encoded = b64::decode("uNCkWiNYzKTnBN9ji3-qWAAAABkCYTHOG8chz_gnvgOqdGYovxyjuqRyJFjEDyoF1Fvkj6hQPdPHI51OEUKEpgz3SsLWIqS_uA");
+        $keyProvider = new MockKeyLookupProvider();
+        $keyProvider->addKey(b64::decode("BO3ZVPxUlnLORbVGMpbT1Q"), 'a1');
+        $decoded = RFC8188::rfc8188_decode(
+            $encoded, // data to decode 
+            $keyProvider
+        );
+
+        $this->assertEquals("I am the walrus", $decoded);
+    }
+
+    public function testMockLookupProviderThrowsKeyNotFoundException() {
+        $encoded = b64::decode("uNCkWiNYzKTnBN9ji3-qWAAAABkCYTHOG8chz_gnvgOqdGYovxyjuqRyJFjEDyoF1Fvkj6hQPdPHI51OEUKEpgz3SsLWIqS_uA");
+        
+        $keyProvider = new MockKeyLookupProvider();
+        $keyProvider->addKey(b64::decode("BO3ZVPxUlnLORbVGMpbT1Q"), ''); // intentionally set keyid NOT to 'a1'
+        
+        $this->expectException(EncryptionKeyNotFound::class);
+        
+        $decoded = RFC8188::rfc8188_decode(
+            $encoded, // data to decode 
+            $keyProvider
+        );
     }
 
     /**
