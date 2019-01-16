@@ -2,8 +2,9 @@
 namespace DevJack\EncryptedContentEncoding\Test\Mock;
 
 use DevJack\EncryptedContentEncoding\Exception\EncryptionKeyNotFound;
+use DevJack\EncryptedContentEncoding\EncryptionKeyProviderInterface;
 
-class MockKeyLookupProvider {
+class MockKeyLookupProvider implements EncryptionKeyProviderInterface {
 
     protected $keys = [];
 
