@@ -74,6 +74,16 @@ $decoded = RFC8188::rfc8188_decode(
 
 ## Installation
 
+Available via composer.
+
 ```
 composer require devjack/encrypted-content-encoding
 ```
+
+### PHP 5.6 compatibility
+Additionally, install a polyfill for random_bytes such as:
+
+```
+composer require paragonie/random_compat
+```
+
