@@ -14,6 +14,8 @@
 
 > Note: RFC8188 relies heavily on base64 URL encoding. 
 
+### Simple callback function for encryption key lookup
+
 ```php
 require_once "vendor/autoload.php";
 
@@ -35,7 +37,40 @@ $decoded = RFC8188::rfc8188_decode(
 $this->assertEquals($message, $decoded);
 ```
 
+### Invocable class for key lookup
+In this example we use a simple incovable class to provide key lookup. This may be more useful in complex framework integrations such as providing middleware that looks up keys from a database. This sample does not cover service injection to the key lookup class.
 
+```php
+use DevJack\EncryptedContentEncoding\RFC8188;
+use DevJack\EncryptedContentEncoding\Exception\EncryptionKeyNotFound;
+use Base64Url\Base64Url as b64;
+
+class MockKeyLookupProvider {
+
+    protected $keys = [];
+
+    public function addKey($key, $keyid='') {
+        $this->keys[$keyid] = $key;
+    }
+    public function __invoke($keyid) {
+        if (in_array($keyid, array_keys($this->keys))) {
+            return $this->keys[$keyid];
+        }
+        throw new EncryptionKeyNotFound("Encryption key not found.");
+    }
+}
+
+
+$encoded = b64::decode("uNCkWiNYzKTnBN9ji3-qWAAAABkCYTHOG8chz_gnvgOqdGYovxyjuqRyJFjEDyoF1Fvkj6hQPdPHI51OEUKEpgz3SsLWIqS_uA");
+
+$keyProvider = new MockKeyLookupProvider();
+$keyProvider->addKey(b64::decode("BO3ZVPxUlnLORbVGMpbT1Q"), 'a1');
+
+$decoded = RFC8188::rfc8188_decode(
+    $encoded, // data to decode
+    $keyProvider
+);
+```
 
 ## Installation
 
